@@ -50,32 +50,31 @@ func Parse(seq string) (*Schedule, error) {
 	}
 	command := strings.TrimLeftFunc(seq, tabSpaceFn)
 
-	var err error
-	var val uint64
-	parseField := func(s string, field string) uint64 {
-		if err != nil {
-			return 0
-		}
-
-		val, err = parseList(s, frames[field])
-		err = errors.Wrap(err, field)
-		return val
-	}
-
+	efp := &errFieldParser{}
 	sch := &Schedule{
-		Minutes:     parseField(minutes, "minute"),
-		Hours:       parseField(hours, "hour"),
-		DaysOfMonth: parseField(daysOfMounth, "dayOfMonth"),
-		Months:      parseField(months, "month"),
-		DaysOfWeek:  parseField(daysOfWeek, "dayOfWeek"),
+		Minutes:     efp.parseField(minutes, "minute"),
+		Hours:       efp.parseField(hours, "hour"),
+		DaysOfMonth: efp.parseField(daysOfMounth, "dayOfMonth"),
+		Months:      efp.parseField(months, "month"),
+		DaysOfWeek:  efp.parseField(daysOfWeek, "dayOfWeek"),
 		Command:     command,
 	}
 
-	if err != nil {
-		return nil, err
+	if efp.err != nil {
+		return nil, efp.err
 	}
 
 	return sch, nil
+}
+
+type errFieldParser struct{ err error }
+
+func (e *errFieldParser) parseField(s, field string) (val uint64) {
+	if e.err != nil {
+		return
+	}
+	val, e.err = parseList(s, frames[field])
+	return
 }
 
 var tabSpaceFn = func(r rune) bool { return r == ' ' || r == '\t' }
