@@ -120,7 +120,6 @@ func TestParse(t *testing.T) {
 	t.Run("Missing/invalid input, exp err", func(t *testing.T) {
 		tt := []string{
 			"a * * * * cmd",
-			"* 1/3 * * * cmd",
 			"* */3 1,-2 * * cmd",
 			"* */3 1-2 9- * cmd",
 			"* */3 1-2 9 8 cmd",
@@ -130,10 +129,10 @@ func TestParse(t *testing.T) {
 			t.Run(tc, func(t *testing.T) {
 				got, err := Parse(tc)
 				if got != nil {
-					t.Error("exp nil schedule")
+					t.Errorf("%v exp nil schedule", tc)
 				}
 				if err == nil {
-					t.Error("exp err got nil")
+					t.Errorf("%v exp err got nil", tc)
 				}
 			})
 		}
