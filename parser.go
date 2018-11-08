@@ -28,13 +28,12 @@ type Schedule struct {
 	DaysOfMonth uint64
 	Months      uint64
 	DaysOfWeek  uint64
-	Command     string
 }
 
 // Parse parses a string input, return a Schedule type and stops on invalid input
 // by returning an error, accepted input "Minute Hour Day of Month Month Day of Week"
 // [] 0/1; {} 0+; | OR
-// Line = {Spaces} List Spaces List Spaces List Spaces List Spaces List Spaces Command .
+// Line = {Spaces} List Spaces List Spaces List Spaces List Spaces List Spaces .
 //                  minute      hour        dom         month       dow
 // List  = Range { "," Range }.
 // Range = "*" ["/" Number] | Number ["-" Number] ["/" Number].
@@ -45,10 +44,9 @@ func Parse(seq string) (*Schedule, error) {
 	seq, months := extractField(seq)
 	seq, daysOfWeek := extractField(seq)
 
-	if seq == "" {
-		return nil, errors.New("invalid sequance, expecting Minute Hour Day Month Command")
+	if seq != "" {
+		return nil, errors.New("invalid sequance, expecting Minute Hour Day Month")
 	}
-	command := strings.TrimLeftFunc(seq, tabSpaceFn)
 
 	efp := &errFieldParser{}
 	sch := &Schedule{
@@ -57,7 +55,6 @@ func Parse(seq string) (*Schedule, error) {
 		DaysOfMonth: efp.parseField(daysOfMounth, "dayOfMonth"),
 		Months:      efp.parseField(months, "month"),
 		DaysOfWeek:  efp.parseField(daysOfWeek, "dayOfWeek"),
-		Command:     command,
 	}
 
 	if efp.err != nil {
@@ -96,7 +93,6 @@ func (s *Schedule) PrintTable(w io.Writer) {
 	fmt.Fprintf(w, "%s\n", s.PrintDaysOfMonth())
 	fmt.Fprintf(w, "%s\n", s.PrintMonths())
 	fmt.Fprintf(w, "%s\n", s.PrintDaysOfWeek())
-	fmt.Fprintf(w, "%s\n", s.PrintCommand())
 }
 
 // PrintMinutes outputs the list of minutes with `minute`
@@ -127,11 +123,6 @@ func (s *Schedule) PrintMonths() string {
 // as a prefix; ranges from 0-7
 func (s *Schedule) PrintDaysOfWeek() string {
 	return prefixPrint("day of week", s.DaysOfWeek, frames["dayOfWeek"])
-}
-
-// PrintCommand outputs the specified command with `command` as prefix
-func (s *Schedule) PrintCommand() string {
-	return fmt.Sprintf("%-14s %s", "command", s.Command)
 }
 
 func prefixPrint(prefix string, val uint64, fr frame) string {
