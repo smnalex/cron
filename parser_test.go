@@ -38,9 +38,6 @@ func TestParseList(t *testing.T) {
 	t.Run("invalid chars in range to", th(parseListReq("1-p", frame{0, 3}), 0, true))
 	t.Run("invalid chars in range with step", th(parseListReq("1-p/4", frame{0, 3}), 0, true))
 	t.Run("invalid chars in step with range", th(parseListReq("1-2/p", frame{0, 3}), 0, true))
-
-	// Reset step to 100
-	t.Run("reset step to 100", th(parseListReq("*/1000", frame{0, 0}), 1, false))
 }
 
 func TestAround(t *testing.T) {
@@ -118,15 +115,17 @@ func TestParse(t *testing.T) {
 
 	t.Run("Missing/invalid input, exp err", func(t *testing.T) {
 		tt := []string{
-			"a * * * * cmd",
-			"* */3 1,-2 * * cmd",
-			"* */3 1-2 9- * cmd",
-			"* */3 1-2 9 8 cmd",
+			"a * * * *",
+			"* */3 1,-2 * *",
+			"* */3 1-2 9- *",
+			"* */3 1-2 9 8",
 			"",
+			"* * * *",
 		}
 		for _, tc := range tt {
 			t.Run(tc, func(t *testing.T) {
 				got, err := Parse(tc)
+				fmt.Println(err)
 				if got != nil {
 					t.Errorf("%v exp nil schedule", tc)
 				}
