@@ -98,14 +98,13 @@ func TestFieldsFrame(t *testing.T) {
 
 func TestParse(t *testing.T) {
 	t.Run("Valid input", func(t *testing.T) {
-		inp := "*/15   0   1,15   *   1-5   /usr/bin/find"
+		inp := "*/15   0   1,15   *   1-5"
 		exp := &Schedule{
 			Minutes:     1<<0 | 1<<15 | 1<<30 | 1<<45,
 			Hours:       1 << 0,
 			DaysOfMonth: 1<<1 | 1<<15,
 			Months:      (1<<(12) - 1) << 1,
 			DaysOfWeek:  1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5,
-			Command:     "/usr/bin/find",
 		}
 		got, err := Parse(inp)
 
@@ -137,18 +136,6 @@ func TestParse(t *testing.T) {
 			})
 		}
 	})
-
-	t.Run("Command is not modified", func(t *testing.T) {
-		exp := "cmd \t     \t    \t \n"
-		inp := "* * * * * " + exp
-		got, err := Parse(inp)
-		if err != nil {
-			t.Errorf("exp no err, got %v", err)
-		}
-		if got.Command != exp {
-			t.Errorf("exp %s got %s", exp, got.Command)
-		}
-	})
 }
 
 func rangeToString(min, max uint8) string {
@@ -166,7 +153,6 @@ func TestPrintMethodsAndTable(t *testing.T) {
 		DaysOfMonth: 0xFFFFFFFF,
 		Months:      0xFFFF,
 		DaysOfWeek:  0xFF,
-		Command:     "bla bla",
 	}
 
 	tt := []struct {
@@ -179,7 +165,6 @@ func TestPrintMethodsAndTable(t *testing.T) {
 		{"day of month", schedule.PrintDaysOfMonth, frames["dayOfMonth"]},
 		{"month", schedule.PrintMonths, frames["month"]},
 		{"day of week", schedule.PrintDaysOfWeek, frames["dayOfWeek"]},
-		{"command", schedule.PrintCommand, frame{0, 0}},
 	}
 
 	var expBuf bytes.Buffer
@@ -187,9 +172,6 @@ func TestPrintMethodsAndTable(t *testing.T) {
 		t.Run(tc.exp, func(t *testing.T) {
 			got := tc.inp()
 			exp := fmt.Sprintf("%-14s %s", tc.exp, rangeToString(tc.fr.min, tc.fr.max))
-			if tc.exp == "command" {
-				exp = fmt.Sprintf("%-14s %s", tc.exp, schedule.Command)
-			}
 			if !strings.HasPrefix(got, exp) {
 				t.Errorf("\nexp %v\ngot %v", exp, got)
 			}
