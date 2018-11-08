@@ -1,4 +1,4 @@
-package parser
+package cron
 
 import (
 	"fmt"
