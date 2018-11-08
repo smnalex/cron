@@ -66,11 +66,17 @@ func Parse(seq string) (*Schedule, error) {
 
 type errFieldParser struct{ err error }
 
-func (e *errFieldParser) parseField(s, field string) (val uint64) {
+func (e *errFieldParser) parseField(seq, field string) (val uint64) {
 	if e.err != nil {
 		return
 	}
-	val, e.err = parseList(s, frames[field])
+
+	if seq == "" {
+		e.err = errors.New("invalid sequance, expecting Minute Hour Day Month")
+		return
+	}
+
+	val, e.err = parseList(seq, frames[field])
 	return
 }
 
@@ -233,8 +239,6 @@ func fillSet(from, to, inc uint8, fr frame) (uint64, error) {
 	return acc, nil
 }
 
-const iNF uint8 = 100
-
 func parseInt(s string) (uint8, error) {
 	var acc uint8
 	for i, r := range s {
@@ -242,9 +246,6 @@ func parseInt(s string) (uint8, error) {
 			return 0, errors.Errorf("invalid digit %v", s)
 		}
 		acc = acc*10 + s[i] - '0'
-	}
-	if acc > iNF {
-		acc = iNF
 	}
 	return acc, nil
 }
